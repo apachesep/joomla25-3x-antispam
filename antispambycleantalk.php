@@ -597,7 +597,10 @@ class plgSystemAntispambycleantalk extends JPlugin
     		$option_cmd == 'com_user'     ||
     		$option_cmd == 'com_login'    ||
     		$option_cmd == 'com_akeebasubs' ||
-    		$option_cmd == 'com_acymailing')
+    		$option_cmd == 'com_acymailing' ||
+    		$option_cmd == 'com_easysocial' ||
+    		$option_cmd == 'com_easybookreloaded'
+    	)
     		return true;
 
     	return false;
@@ -662,16 +665,19 @@ class plgSystemAntispambycleantalk extends JPlugin
      */
     public function onBeforeCompileHead()
     {
+    	$config = $this->getCTConfig();
     	$user = JFactory::getUser();
-		
-		JFactory::getDocument()->addScriptDeclaration($this->getJSTest());
+    	$app = JFactory::getApplication();	
+		$document = JFactory::getDocument();
+		if ($app->isSite())
+		{
+			$document->addScriptDeclaration($this->getJSTest());
+			if ($config['check_external_forms'])
+				$document->addScript(Juri::root()."plugins/system/antispambycleantalk/js/ct-external.js");			
+		}
 
     	if($user->get('isRoot'))
-    	{
-		
-			$document = JFactory::getDocument();
-			$app = JFactory::getApplication();	
-			
+    	{			
 			// Version comparsion
 			if(!version_compare(JVERSION, '3', 'ge'))
 			{
@@ -682,7 +688,7 @@ class plgSystemAntispambycleantalk extends JPlugin
 					if(stripos($key,'jquery')!==false)
 						$is_jquery=true;				
 				if(!$is_jquery)
-					$document->addScript(Juri::root()."plugins/system/antispambycleantalk/jquery-1.11.2.min.js");
+					$document->addScript(Juri::root()."plugins/system/antispambycleantalk/js/jquery-1.11.2.min.js");
 				
 				$document->addScriptDeclaration("jQuery.noConflict();");
 				$document->addScriptDeclaration("var ct_joom25=true;");
@@ -695,7 +701,6 @@ class plgSystemAntispambycleantalk extends JPlugin
 			}
 			if($app->isAdmin())
 			{
-				$config = $this->getCTConfig();
 				$temp_config = $this->checkIsPaid($config['apikey']);
 
 				if ($temp_config)
@@ -842,106 +847,112 @@ class plgSystemAntispambycleantalk extends JPlugin
 
             }
         }
-        if ($_SERVER['REQUEST_METHOD'] == 'POST') 
-            $this->ct_direct_post = 1;
         /*
             Contact forms anti-spam code
         */
-        $sender_email = null;
-        $message = '';
-        $sender_nickname = null;
-		$post_info = json_encode(array(
-			'comment_type' => 'feedback_general_contact_form',
-			'post_url'     => isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '')
-		);     
-
-        //Rapid
-        if (isset($_POST['rp_email'])){ 
-            $sender_email = $_POST['rp_email'];
-
-            if (isset($_POST["rp_subject"]))
-                $message = $_POST["rp_subject"];
-            
-            if (isset($_POST['rp_message']))
-                $message .= ' ' . $_POST['rp_message'];
-        } //VTEM Contact
-        elseif (isset($_POST["vcontact_email"])) { 
-            $sender_email = $_POST['vcontact_email'];
-            if (isset($_POST["vcontact_subject"]))
-                $message = $_POST["vcontact_subject"];
-
-            if (isset($_POST["vcontact_message"]))
-                $message .= ' ' . $_POST["vcontact_message"];
-            
-            if (isset($_POST["vcontact_name"]))
-                $sender_nickname = $_POST["vcontact_name"];
-        } //BreezingForms
-        elseif (isset($_POST['ff_task']) && $_POST['ff_task'] == 'submit') {
-
-            foreach ($_POST as $v) {
-                if (is_array($v)) {
-                    foreach ($v as $k=>$v2) {
-                        if ($this->validEmail($v2)) {
-                            $sender_email = $v2;
-                        }
-                        else
-                        {
-                        	if(is_int($k))
-                        	{
-                        		$message.=$v2."\n";
-                        	}
-                        }
-                    }
-                } else {
-                    if ($this->validEmail($v)) {
-                        $sender_email = $v;
-                    }
-                    else
-                    {
-                   		//$contact_message.=$v."\n";
-                    }
-                }
-            }
-        }//EasybookReloaded
-        elseif ($option_cmd == 'com_easybookreloaded')
+        if ($_SERVER['REQUEST_METHOD'] == 'POST')
         {
-        	if (isset($_POST['gbmail']))
-        		$sender_email = $_POST['gbmail'];
-        	if (isset($_POST['gbname']))
-        		$sender_nickname = $_POST['gbname'];
-        	if (isset($_POST['gbtitle']))
-        		$message = $_POST['gbtitle'];
-        	if (isset($_POST['gbtext']))
-        		$message .= ' ' .$_POST['gbtext'];
-        }
-        // Genertal test for any forms or form with custom fields
-        elseif ($_SERVER['REQUEST_METHOD'] == 'POST' &&
-         	($config['general_contact_forms_test'] ||
-         	$config['general_post_test'] ||
-        	$option_cmd == 'com_rsform' ||
-        	$option_cmd == 'com_virtuemart')
-        )
-        {
-			$ct_temp_msg_data = $this->getFieldsAny($_POST);
-			$sender_email    = ($ct_temp_msg_data['email']    ? $ct_temp_msg_data['email']    : '');
-			$sender_nickname = ($ct_temp_msg_data['nickname'] ? $ct_temp_msg_data['nickname'] : '');
-			$subject         = ($ct_temp_msg_data['subject']  ? $ct_temp_msg_data['subject']  : '');
-			$contact_form    = ($ct_temp_msg_data['contact']  ? $ct_temp_msg_data['contact']  : true);
-			$message         = ($ct_temp_msg_data['message']  ? $ct_temp_msg_data['message']  : array());
+        	$this->ct_direct_post = 1;
+	        $sender_email = null;
+	        $message = '';
+	        $sender_nickname = null;
+	        $spam_check = false;
+			$post_info = array(
+				'comment_type' => 'feedback_general_contact_form',
+				'post_url'     => isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : ''
+			);     
+			if ($config['check_contact_forms'])
+			{
+		        //Rapid
+		        if (isset($_POST['rp_email'])){ 
+		            $sender_email = $_POST['rp_email'];
 
-			if ($subject != '')
-				$message = array_merge(array('subject' => $subject), $message);
-			$message = implode("\n", $message);
+		            if (isset($_POST["rp_subject"]))
+		                $message = $_POST["rp_subject"];
+		            
+		            if (isset($_POST['rp_message']))
+		                $message .= ' ' . $_POST['rp_message'];
+		            $post_info['comment_type'] = 'contact_form_rapid';
+		        } //VTEM Contact
+		        elseif (isset($_POST["vcontact_email"])) { 
+		            $sender_email = $_POST['vcontact_email'];
+		            if (isset($_POST["vcontact_subject"]))
+		                $message = $_POST["vcontact_subject"];
+
+		            if (isset($_POST["vcontact_message"]))
+		                $message .= ' ' . $_POST["vcontact_message"];
+		            
+		            if (isset($_POST["vcontact_name"]))
+		                $sender_nickname = $_POST["vcontact_name"];
+		            $post_info['comment_type'] = 'contact_form_vtem';
+		        } //BreezingForms
+		        elseif (isset($_POST['ff_task']) && $_POST['ff_task'] == 'submit') {
+
+		            foreach ($_POST as $v) {
+		                if (is_array($v)) {
+		                    foreach ($v as $k=>$v2) {
+		                        if ($this->validEmail($v2)) {
+		                            $sender_email = $v2;
+		                        }
+		                        else
+		                        {
+		                        	if(is_int($k))
+		                        	{
+		                        		$message.=$v2."\n";
+		                        	}
+		                        }
+		                    }
+		                } else {
+		                    if ($this->validEmail($v)) {
+		                        $sender_email = $v;
+		                    }
+		                    else
+		                    {
+		                   		//$contact_message.=$v."\n";
+		                    }
+		                }
+		            }
+		            $post_info['comment_type'] = 'contact_form_breezing';
+		        }
+		        if ($sender_email != '' || $sender_nickname != '' || $message != '')
+		        	$spam_check = true;
+			}
+	        // Genertal test for any forms or form with custom fields
+	        if (!$spam_check &&
+	        	(
+	        		$config['general_contact_forms_test'] ||
+		         	$config['general_post_test'] ||
+		         	$config['check_external_forms'] ||
+		        	$option_cmd == 'com_rsform' ||
+		        	$option_cmd == 'com_virtuemart'
+	        	)
+	        )
+	        {
+				$ct_temp_msg_data = $this->getFieldsAny($_POST);
+				$sender_email    = ($ct_temp_msg_data['email']    ? $ct_temp_msg_data['email']    : '');
+				$sender_nickname = ($ct_temp_msg_data['nickname'] ? $ct_temp_msg_data['nickname'] : '');
+				$subject         = ($ct_temp_msg_data['subject']  ? $ct_temp_msg_data['subject']  : '');
+				$contact_form    = ($ct_temp_msg_data['contact']  ? $ct_temp_msg_data['contact']  : true);
+				$message         = ($ct_temp_msg_data['message']  ? $ct_temp_msg_data['message']  : array());
+
+				if ($subject != '')
+					$message = array_merge(array('subject' => $subject), $message);
+				$message = implode("\n", $message);
+				if ($sender_email != '' || $config['general_post_test'])
+					$spam_check = true;
+	        }			
         }
+
+
         
-        if (!$this->exceptionList() && (trim($sender_email) !='' || $config['general_post_test']))
+        if (!$this->exceptionList() && $spam_check)
         {
         	$ctResponse = self::ctSendRequest(
 	            'check_message', array(
 	                'sender_nickname' => $sender_nickname,
 	                'sender_email' => $sender_email,
 	                'message' => trim(preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/","\n", $message)),
-	                'post_info' => $post_info,
+	                'post_info' => json_encode($post_info),
 	            )
         	);
 
@@ -965,7 +976,6 @@ class plgSystemAntispambycleantalk extends JPlugin
             }
         }
     }
-
     ////////////////////////////
     // com_contact related sutff
 
@@ -1076,7 +1086,10 @@ class plgSystemAntispambycleantalk extends JPlugin
     public function onJCommentsCommentBeforeAdd(&$comment) {
         
         $config = $this->getCTConfig();
-        
+
+        if (!$config['jcomments_check'])
+        	return;
+
         $session = JFactory::getSession();
 
         // set new time because onJCommentsFormAfterDisplay worked only once
@@ -1159,7 +1172,7 @@ class plgSystemAntispambycleantalk extends JPlugin
 						    if ($config['jcomments_unpublished_nofications'] != '') {
 						        JComments::sendNotification($comment, true);
 						    }
-							if ($ctResponse['stop_queue'] === 1)
+							if (!$config['jcomments_automoderation'] || $ctResponse['stop_queue'] === 1)
 							{
 						     	JCommentsAJAX::showErrorMessage($ctResponse['comment'], 'comment');
 						    	return false;                 		
@@ -1236,9 +1249,11 @@ class plgSystemAntispambycleantalk extends JPlugin
      * Moderate new user
      */
     private function moderateUser() {
+
+    	$config = $this->getCTConfig();
         // Call function only for guests
         // Call only for $_POST with variables
-        if (JFactory::getUser()->id || $_SERVER['REQUEST_METHOD'] != 'POST') {
+        if (JFactory::getUser()->id || $_SERVER['REQUEST_METHOD'] != 'POST' || !$config['check_registration']) {
             return false;
         }
         $post = $_POST;
@@ -1439,9 +1454,14 @@ class plgSystemAntispambycleantalk extends JPlugin
 		$config['acc_status_last_check'] = intval($jreg->get('acc_status_last_check', 0));
 		$config['acc_status_check_interval'] = intval($jreg->get('acc_status_check_interval', 86400));
 		$config['jcomments_unpublished_nofications'] = intval($jreg->get('jcomments_unpublished_nofications', 0));
+		$config['check_registration'] = intval($jreg->get('check_registration', 1));
+		$config['check_contact_forms'] = intval($jreg->get('check_contact_forms', 1));
 		$config['general_contact_forms_test'] = intval($jreg->get('general_contact_forms_test', 0));
 		$config['general_post_test'] = intval($jreg->get('general_post_test', 0));
+		$config['check_external_forms'] = intval($jreg->get('check_external_forms', 0));
 		$config['relevance_test'] = intval($jreg->get('relevance_test', 0));
+		$config['jcomments_check'] = intval($jreg->get('jcomments_check', 1));
+		$config['jcomments_automoderation'] = intval($jreg->get('jcomments_automoderation', 0));
 		$config['tell_about_cleantalk'] = intval($jreg->get('tell_about_cleantalk', 0));
 		$config['js_keys'] = $jreg->get('js_keys',array());
 		$config['js_keys_store_days'] = intval($jreg->get('js_keys_store_days',14));
@@ -1514,7 +1534,7 @@ class plgSystemAntispambycleantalk extends JPlugin
             JavaScript validation via Cookies
         */
         $field_name = 'ct_checkjs';
-        $get_funcs = file_get_contents(dirname(__FILE__) . DS. "js". DS. "ct-functions.js");
+        $get_funcs = file_get_contents(Juri::root()."plugins/system/antispambycleantalk/js/ct-functions.js");
         $html = str_replace("{value}", $value, $get_funcs);
 		$html = sprintf($html, $field_name, $value);
 

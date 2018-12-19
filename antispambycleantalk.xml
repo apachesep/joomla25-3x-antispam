@@ -20,8 +20,9 @@
 	<filename plugin="antispambycleantalk">classes/sfw_die_page.html</filename>
 	<filename plugin="antispambycleantalk">js/ct-settings.js</filename>
 	<filename plugin="antispambycleantalk">js/ct-functions.js</filename>	
+	<filename plugin="antispambycleantalk">js/ct-external.js</filename>
 	<filename plugin="antispambycleantalk">css/ct-settings.css</filename>
-	<filename plugin="antispambycleantalk">jquery-1.11.2.min.js</filename>
+	<filename plugin="antispambycleantalk">js/jquery-1.11.2.min.js</filename>
 	<filename plugin="antispambycleantalk">preloader.gif</filename>
 	<filename plugin="antispambycleantalk">error.html</filename>
 	<filename plugin="antispambycleantalk">custom_config.php</filename>
@@ -53,8 +54,11 @@
 			<field name="hr_spacer" type="spacer" 
 				label="&lt;hr/&gt;"
 				class="cleantalk_spacer"
-			/>			
+			/>	
+			<field name="check_registration" type="checkbox" label="COM_PLUGINS_CT_REGISTRATION_FORMS" value="1" default="1" description="COM_PLUGINS_CT_REGISTRATION_FORMS_DESCRIPTION" />	
+			<field name="check_contact_forms" type="checkbox" label="COM_PLUGINS_CT_CONTACT_FORMS" value="1" default="1" description="COM_PLUGINS_CT_CONTACT_FORMS_DESCRIPTION" />	
             <field name="general_contact_forms_test" type="checkbox" label="COM_PLUGINS_CT_CUSTOM_FORMS" value="1" default="0" description="COM_PLUGINS_CT_CUSTOM_FORMS_DESCRIPTION" />
+            <field name="check_external_forms" type="checkbox" label="COM_PLUGINS_CT_EXTERNAL_FORMS" value="1" default="0" description="COM_PLUGINS_CT_EXTERNAL_FORMS_DESCRIPTION" />
 			<field name="general_post_test" type="checkbox" label="COM_PLUGINS_CT_POST_TEST" value="1" default="0" description="COM_PLUGINS_CT_POST_TEST_DESCRIPTION" />
             <field name="tell_about_cleantalk" type="checkbox" label="COM_PLUGINS_CT_TELL_ABOUT" value="1" default="0" description="COM_PLUGINS_CT_TELL_ABOUT_DESCRIPTION" />
 
@@ -161,7 +165,8 @@
 				multiple="true" 
 				default="1"
 			/>
-        
+        	<field name="jcomments_check" type="checkbox" label="COM_PLUGINS_JCOMMENTS_CHECK" value="0" default="1" />
+        	<field name="jcomments_automoderation" type="checkbox" label="COM_PLUGINS_JCOMMENTS_AUTOMODERATION" value="0" default="0" />
             <field name="jcomments_unpublished_nofications" type="checkbox" label="COM_PLUGINS_JCOMMENTS_NOTIFY_NEW_UNPUBLISHED" value="0" />
             <field name="relevance_test" type="checkbox" label="COM_PLUGINS_RELEVANCE_TEST" value="0" />
 			<field name="key_control" type="spacer" 
