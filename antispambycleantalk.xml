@@ -166,7 +166,7 @@
 				default="1"
 			/>
         	<field name="jcomments_check" type="checkbox" label="COM_PLUGINS_JCOMMENTS_CHECK" value="0" default="1" />
-        	<field name="jcomments_automoderation" type="checkbox" label="COM_PLUGINS_JCOMMENTS_AUTOMODERATION" value="0" default="0" />
+        	<field name="jcomments_automoderation" type="checkbox" label="COM_PLUGINS_JCOMMENTS_AUTOMODERATION" description="COM_PLUGINS_JCOMMENTS_AUTOMODERATION_DESCRIPTION" value="0" default="0" />
             <field name="jcomments_unpublished_nofications" type="checkbox" label="COM_PLUGINS_JCOMMENTS_NOTIFY_NEW_UNPUBLISHED" value="0" />
             <field name="relevance_test" type="checkbox" label="COM_PLUGINS_RELEVANCE_TEST" value="0" />
 			<field name="key_control" type="spacer" 
