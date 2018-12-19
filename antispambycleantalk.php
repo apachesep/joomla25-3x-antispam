@@ -3,7 +3,7 @@
 /**
  * CleanTalk joomla plugin
  *
- * @version 5.8
+ * @version 5.9
  * @package Cleantalk
  * @subpackage Joomla
  * @author CleanTalk (welcome@cleantalk.org) 
@@ -27,7 +27,7 @@ class plgSystemAntispambycleantalk extends JPlugin
     /**
      * Plugin version string for server
      */
-    const ENGINE = 'joomla3-58';
+    const ENGINE = 'joomla3-59';
 
     /*
      * Flag marked JComments form initilization. 
@@ -915,9 +915,12 @@ class plgSystemAntispambycleantalk extends JPlugin
         		$message .= ' ' .$_POST['gbtext'];
         }
         // Genertal test for any forms or form with custom fields
-        elseif (($_SERVER['REQUEST_METHOD'] == 'POST' && $config['general_contact_forms_test']) || 
+        elseif ($_SERVER['REQUEST_METHOD'] == 'POST' &&
+         	($config['general_contact_forms_test'] ||
+         	$config['general_post_test'] ||
         	$option_cmd == 'com_rsform' ||
         	$option_cmd == 'com_virtuemart')
+        )
         {
 			$ct_temp_msg_data = $this->getFieldsAny($_POST);
 			$sender_email    = ($ct_temp_msg_data['email']    ? $ct_temp_msg_data['email']    : '');
@@ -931,7 +934,7 @@ class plgSystemAntispambycleantalk extends JPlugin
 			$message = implode("\n", $message);
         }
         
-        if (trim($sender_email) !='' && !$this->exceptionList())
+        if (!$this->exceptionList() && (trim($sender_email) !='' || $config['general_post_test']))
         {
         	$ctResponse = self::ctSendRequest(
 	            'check_message', array(
@@ -1437,6 +1440,7 @@ class plgSystemAntispambycleantalk extends JPlugin
 		$config['acc_status_check_interval'] = intval($jreg->get('acc_status_check_interval', 86400));
 		$config['jcomments_unpublished_nofications'] = intval($jreg->get('jcomments_unpublished_nofications', 0));
 		$config['general_contact_forms_test'] = intval($jreg->get('general_contact_forms_test', 0));
+		$config['general_post_test'] = intval($jreg->get('general_post_test', 0));
 		$config['relevance_test'] = intval($jreg->get('relevance_test', 0));
 		$config['tell_about_cleantalk'] = intval($jreg->get('tell_about_cleantalk', 0));
 		$config['js_keys'] = $jreg->get('js_keys',array());
