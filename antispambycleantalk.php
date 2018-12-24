@@ -55,31 +55,33 @@ class plgSystemAntispambycleantalk extends JPlugin
     {
     	$config = $this->getCTConfig();
     	$keys = $config['js_keys'];
-        $key = strval(md5(JFactory::getApplication()->getCfg('mailfrom') . time()));
+    	$keys_checksum = md5(json_encode($keys));
+        $key = null;
         $latest_key_time = 0;
-        if (empty($keys))
-        	$keys = array(time() => $key);
-        else
-        {
-        	$keys = json_decode($keys,true);
-	        foreach ($keys as $t => $k) {
-	            // Removing key if it's to old
-	            if (time() - $t > $config['js_keys_store_days'] * 86400) {
-	                unset($keys[$t]);
-	                continue;
-	            }
-	            if ($t > $latest_key_time) {
-	                $latest_key_time = $t;
-	                $key = $k;
-	            }
-	        }
-	        // Get new key if the latest key is too old
-	        if (time() - $latest_key_time > $config['js_key_lifetime']) {
-	            $keys[time()] = $key;
-	        }	                 	
+        foreach ($keys as $k => $t) {
+
+            // Removing key if it's to old
+            if (time() - $t > $config['js_keys_store_days'] * 86400) {
+                unset($keys[$k]);
+                continue;
+            }
+
+            if ($t > $latest_key_time) {
+                $latest_key_time = $t;
+                $key = $k;
+            }
         }
-        $save_params['js_keys'] = json_encode($keys);
-        $this->saveCTConfig($save_params);        
+        
+        // Get new key if the latest key is too old
+        if (time() - $latest_key_time > $config['js_key_lifetime']) {
+            $key = rand();
+            $keys[$key] = time();
+        }
+        
+        if (md5(json_encode($keys)) != $keys_checksum) {
+        	$save_params['js_keys'] = $keys;
+        	$this->saveCTConfig($save_params);
+        }      
                   
 		return $key;	
     }  
@@ -1463,7 +1465,7 @@ class plgSystemAntispambycleantalk extends JPlugin
 		$config['jcomments_check'] = intval($jreg->get('jcomments_check', 0));
 		$config['jcomments_automoderation'] = intval($jreg->get('jcomments_automoderation', 0));
 		$config['tell_about_cleantalk'] = intval($jreg->get('tell_about_cleantalk', 0));
-		$config['js_keys'] = $jreg->get('js_keys',array());
+		$config['js_keys'] = (array)$jreg->get('js_keys',array());
 		$config['js_keys_store_days'] = intval($jreg->get('js_keys_store_days',14));
 		$config['js_key_lifetime'] = intval($jreg->get('js_key_lifetime',86400));
 		$config['show_review_done'] = intval($jreg->get('show_review_done',0));						
@@ -1500,23 +1502,17 @@ class plgSystemAntispambycleantalk extends JPlugin
         } else {
             $data = $_POST;
         }
-
         $checkjs = null;
-        if (isset($data['ct_checkjs'])) {
-            $checkjs_valid = $this->cleantalk_get_checkjs_code();
-            if (!$checkjs_valid)
-                return $checkjs;
 
-            if (preg_match("/$checkjs_valid/", $data['ct_checkjs'])) {
-                $checkjs = 1;
-            } else {
-                $checkjs = 0;
-            }
+        if (isset($data['ct_checkjs'])) {
+        	$config = $this->getCTConfig();
+        	$js_post_value = $data['ct_checkjs'];
+        	$keys = $config['js_keys'];
+        	$checkjs = isset($keys[$js_post_value]) ? 1 : 0;
         }
 
-        $option_cmd = JFactory::getApplication()->input->get('option');
         // Return null if ct_checkjs is not set, because VirtueMart not need strict JS test
-        if (!isset($data['ct_checkjs']) && $option_cmd = 'com_virtuemart')
+        if (!isset($data['ct_checkjs']) && $JFactory::getApplication()->input->get('option') == 'com_virtuemart')
            $checkjs = null; 
         
         return $checkjs;
@@ -1561,7 +1557,7 @@ class plgSystemAntispambycleantalk extends JPlugin
      */
     private function submit_time_test() 
     {
-    	return $this->ct_cookies_test() ? time() - intval($_COOKIE['ct_ps_timestamp']) : 0;
+    	return $this->ct_cookies_test() ? time() - intval($_COOKIE['ct_timestamp']) : 0;
     }
     
     /**
@@ -1587,9 +1583,10 @@ class plgSystemAntispambycleantalk extends JPlugin
             'page_set_timestamp' => $page_set_timestamp,            
             'direct_post' => $this->ct_direct_post,
             'cookies_enabled' => $this->ct_cookies_test(), 
-            'ct_options'=>json_encode($config),
+            'ct_options' => json_encode($config),
             'REFFERRER_PREVIOUS' => isset($_COOKIE['ct_prev_referer'])?$_COOKIE['ct_prev_referer']:null,
             'fields_number'   => sizeof($_POST),
+            'js_keys' => json_encode($config['js_keys']),
         );
         return json_encode($sender_info);
     }
@@ -1609,6 +1606,12 @@ class plgSystemAntispambycleantalk extends JPlugin
 			'check_value' => $config['apikey'],
 		);
 
+        // Submit time
+        $ct_timestamp = time();
+        setcookie('ct_timestamp', $ct_timestamp, 0, '/');
+        $cookie_test_value['cookies_names'][] = 'ct_timestamp';
+
+        $cookie_test_value['check_value'] .= $ct_timestamp; 
         // Pervious referer
         if(!empty($_SERVER['HTTP_REFERER'])){
             setcookie('ct_prev_referer', $_SERVER['HTTP_REFERER'], 0, '/');
