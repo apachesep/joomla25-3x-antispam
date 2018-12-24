@@ -940,41 +940,41 @@ class plgSystemAntispambycleantalk extends JPlugin
 				$message = implode("\n", $message);
 				if ($sender_email != '' || $config['general_post_test'])
 					$spam_check = true;
-	        }			
+	        }
+	        if (!$this->exceptionList() && $spam_check)
+	        {
+	        	$ctResponse = self::ctSendRequest(
+		            'check_message', array(
+		                'sender_nickname' => $sender_nickname,
+		                'sender_email' => $sender_email,
+		                'message' => trim(preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/","\n", $message)),
+		                'post_info' => json_encode($post_info),
+		            )
+	        	);
+
+	            if ($ctResponse) 
+	            {
+			        if (!empty($ctResponse) && is_array($ctResponse)) 
+			        {
+			            if ($ctResponse['errno'] != 0) 
+			                $this->sendAdminEmail("CleanTalk. Can't verify feedback message!", $ctResponse['comment']);
+						else 
+						{
+			                if ($ctResponse['allow'] == 0)
+			                {
+			            		$error_tpl=file_get_contents(dirname(__FILE__)."/error.html");
+								print str_replace('%ERROR_TEXT%',$ctResponse['comment'],$error_tpl);
+								die();		                    	                	
+			                } 
+
+			            }
+			        } 
+	            }
+	        }	        			
         }
 
 
         
-        if (!$this->exceptionList() && $spam_check)
-        {
-        	$ctResponse = self::ctSendRequest(
-	            'check_message', array(
-	                'sender_nickname' => $sender_nickname,
-	                'sender_email' => $sender_email,
-	                'message' => trim(preg_replace("/(^[\r\n]*|[\r\n]+)[\s\t]*[\r\n]+/","\n", $message)),
-	                'post_info' => json_encode($post_info),
-	            )
-        	);
-
-            if ($ctResponse) 
-            {
-		        if (!empty($ctResponse) && is_array($ctResponse)) 
-		        {
-		            if ($ctResponse['errno'] != 0) 
-		                $this->sendAdminEmail("CleanTalk. Can't verify feedback message!", $ctResponse['comment']);
-					else 
-					{
-		                if ($ctResponse['allow'] == 0)
-		                {
-		            		$error_tpl=file_get_contents(dirname(__FILE__)."/error.html");
-							print str_replace('%ERROR_TEXT%',$ctResponse['comment'],$error_tpl);
-							die();		                    	                	
-		                } 
-
-		            }
-		        } 
-            }
-        }
     }
     ////////////////////////////
     // com_contact related sutff
@@ -1454,13 +1454,13 @@ class plgSystemAntispambycleantalk extends JPlugin
 		$config['acc_status_last_check'] = intval($jreg->get('acc_status_last_check', 0));
 		$config['acc_status_check_interval'] = intval($jreg->get('acc_status_check_interval', 86400));
 		$config['jcomments_unpublished_nofications'] = intval($jreg->get('jcomments_unpublished_nofications', 0));
-		$config['check_registration'] = intval($jreg->get('check_registration', 1));
-		$config['check_contact_forms'] = intval($jreg->get('check_contact_forms', 1));
+		$config['check_registration'] = intval($jreg->get('check_registration', 0));
+		$config['check_contact_forms'] = intval($jreg->get('check_contact_forms', 0));
 		$config['general_contact_forms_test'] = intval($jreg->get('general_contact_forms_test', 0));
 		$config['general_post_test'] = intval($jreg->get('general_post_test', 0));
 		$config['check_external_forms'] = intval($jreg->get('check_external_forms', 0));
 		$config['relevance_test'] = intval($jreg->get('relevance_test', 0));
-		$config['jcomments_check'] = intval($jreg->get('jcomments_check', 1));
+		$config['jcomments_check'] = intval($jreg->get('jcomments_check', 0));
 		$config['jcomments_automoderation'] = intval($jreg->get('jcomments_automoderation', 0));
 		$config['tell_about_cleantalk'] = intval($jreg->get('tell_about_cleantalk', 0));
 		$config['js_keys'] = $jreg->get('js_keys',array());
