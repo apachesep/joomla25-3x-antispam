@@ -1850,7 +1850,7 @@ class plgSystemAntispambycleantalk extends JPlugin
     {
     	$app = JFactory::getApplication(); 
 
-		if (!$app->isAdmin() && $this->ct_params['apikey'] != ''  && $this->ct_params['sfw_enable'] && $_SERVER["REQUEST_METHOD"] == 'GET')
+		if (!$app->isAdmin() && $this->ct_params['sfw_enable'] && $_SERVER["REQUEST_METHOD"] == 'GET')
 		{
 		   	$is_sfw_check = true;
 			$sfw = new CleantalkSFW();
