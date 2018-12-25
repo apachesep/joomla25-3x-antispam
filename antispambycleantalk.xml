@@ -55,107 +55,13 @@
 				label="&lt;hr/&gt;"
 				class="cleantalk_spacer"
 			/>	
-			<field name="check_registration" type="checkbox" label="COM_PLUGINS_CT_REGISTRATION_FORMS" value="1" default="1" description="COM_PLUGINS_CT_REGISTRATION_FORMS_DESCRIPTION" />	
-			<field name="check_contact_forms" type="checkbox" label="COM_PLUGINS_CT_CONTACT_FORMS" value="1" default="1" description="COM_PLUGINS_CT_CONTACT_FORMS_DESCRIPTION" />	
-            <field name="general_contact_forms_test" type="checkbox" label="COM_PLUGINS_CT_CUSTOM_FORMS" value="1" default="0" description="COM_PLUGINS_CT_CUSTOM_FORMS_DESCRIPTION" />
-            <field name="check_external_forms" type="checkbox" label="COM_PLUGINS_CT_EXTERNAL_FORMS" value="1" default="0" description="COM_PLUGINS_CT_EXTERNAL_FORMS_DESCRIPTION" />
-			<field name="general_post_test" type="checkbox" label="COM_PLUGINS_CT_POST_TEST" value="1" default="0" description="COM_PLUGINS_CT_POST_TEST_DESCRIPTION" />
-            <field name="tell_about_cleantalk" type="checkbox" label="COM_PLUGINS_CT_TELL_ABOUT" value="1" default="0" description="COM_PLUGINS_CT_TELL_ABOUT_DESCRIPTION" />
-
-            <field name="sfw_enable" type="checkbox" label="COM_PLUGINS_CT_SPAM_FIREWALL" value="1" default="0" description="COM_PLUGINS_CT_SPAM_FIREWALL_DESCRIPTION" />
-			<field name="sfw_last_check" type="hidden" 
-				default="0" 
-			/>
-			<field name="sfw_check_interval" type="hidden" 
-				default="86400" 
-			/>
-			<field name="sfw_reload_timeout" type="hidden" 
-				default="3" 
-			/>
-			<field name="sfw_last_send_log" type="hidden" 
-				default="0" 
-			/>
-			<field name="server_url" type="hidden" 
-				label="PLG_SYSTEM_CLEANTALK_PARAM_SERVER" 
-				description="PLG_SYSTEM_CLEANTALK_PARAM_SERVER_DESC" 
-				size="50" 
-				default="http://moderate.cleantalk.org" 
-			/>
-			<field name="work_url" type="hidden" 
-				default="" 
-			/>
-			<field name="server_ttl" type="hidden" 
-				default="0"
-			/>			
-			<field name="server_changed" type="hidden" 
-				default="0" 
-			/>											
-			<field name="user_token" type="hidden" 
-				default="" 
-			/>
-			<field name ="service_id" type="hidden"
-				default=""
-			/>
-			<field name ="spam_count" type="hidden"
-				default="0"
-			/>
-			<field name="show_notice" type="hidden" 
-				default="0" 
-			/>
-			<field name="renew" type="hidden"  
-				default="0" 
-			/>	
-			<field name="trial" type="hidden"  
-				default="0" 
-			/>					
-			<field name="show_review" type="hidden"  
-				default="0" 
-			/>
-			<field name="show_review_done" type="hidden"  
-				default="0" 
-			/>				
-			<field name="ip_license" type="hidden"  
-				default="0" 
-			/>
-			<field name="license_trial" type="hidden"  
-				default="0" 
-			/>
-			<field name="valid" type="hidden"  
-				default="0" 
-			/>
-			<field name="auto_update_app" type="hidden"  
-				default="0" 
-			/>	
-			<field name="show_auto_update_notice" type="hidden"  
-				default="0" 
-			/>											
-			<field name="moderate_ip" type="hidden" 
-				default="0" 
-			/>
-			<field name="moderate" type="hidden"  
-				default="0" 
-			/>	
-			<field name="acc_status_last_check" type="hidden"  
-				default="0" 
-			/>
-			<field name="acc_status_check_interval" type="hidden"  
-				default="86400" 
-			/>										
-			<field name="ct_key_is_ok" type="hidden" 
-				default="0" 
-			/>
- 			<field name="js_keys" type="hidden" 
-				default="" 
-			/>
- 			<field name="js_keys_store_days" type="hidden" 
-				default="14" 
-			/>	
- 			<field name="js_key_lifetime" type="hidden" 
-				default="86400" 
-			/>	
- 			<field name="connection_reports" type="hidden" 
-				default="" 
-			/>							               
+			<field name="check_registration" type="checkbox" label="COM_PLUGINS_CT_REGISTRATION_FORMS" checked="1" description="COM_PLUGINS_CT_REGISTRATION_FORMS_DESCRIPTION" />	
+			<field name="check_contact_forms" type="checkbox" label="COM_PLUGINS_CT_CONTACT_FORMS" checked="1" description="COM_PLUGINS_CT_CONTACT_FORMS_DESCRIPTION" />	
+            <field name="general_contact_forms_test" type="checkbox" label="COM_PLUGINS_CT_CUSTOM_FORMS" checked="1" description="COM_PLUGINS_CT_CUSTOM_FORMS_DESCRIPTION" />
+            <field name="check_external_forms" type="checkbox" label="COM_PLUGINS_CT_EXTERNAL_FORMS" description="COM_PLUGINS_CT_EXTERNAL_FORMS_DESCRIPTION" />
+			<field name="general_post_test" type="checkbox" label="COM_PLUGINS_CT_POST_TEST" description="COM_PLUGINS_CT_POST_TEST_DESCRIPTION" />
+            <field name="tell_about_cleantalk" type="checkbox" label="COM_PLUGINS_CT_TELL_ABOUT" description="COM_PLUGINS_CT_TELL_ABOUT_DESCRIPTION" />
+            <field name="sfw_enable" type="checkbox" label="COM_PLUGINS_CT_SPAM_FIREWALL" description="COM_PLUGINS_CT_SPAM_FIREWALL_DESCRIPTION" />               
 		</fieldset>
 		<fieldset name="jcomments">
 			<field name="groups" type="usergroup" 
@@ -165,14 +71,13 @@
 				multiple="true" 
 				default="1"
 			/>
-        	<field name="jcomments_check" type="checkbox" label="COM_PLUGINS_JCOMMENTS_CHECK" value="0" default="1" />
-        	<field name="jcomments_automoderation" type="checkbox" label="COM_PLUGINS_JCOMMENTS_AUTOMODERATION" description="COM_PLUGINS_JCOMMENTS_AUTOMODERATION_DESCRIPTION" value="0" default="0" />
-            <field name="jcomments_unpublished_nofications" type="checkbox" label="COM_PLUGINS_JCOMMENTS_NOTIFY_NEW_UNPUBLISHED" value="0" />
-            <field name="relevance_test" type="checkbox" label="COM_PLUGINS_RELEVANCE_TEST" value="0" />
+        	<field name="jcomments_check" type="checkbox" label="COM_PLUGINS_JCOMMENTS_CHECK" checked="1" />
+        	<field name="jcomments_automoderation" type="checkbox" label="COM_PLUGINS_JCOMMENTS_AUTOMODERATION" description="COM_PLUGINS_JCOMMENTS_AUTOMODERATION_DESCRIPTION" />
+            <field name="jcomments_unpublished_nofications" type="checkbox" label="COM_PLUGINS_JCOMMENTS_NOTIFY_NEW_UNPUBLISHED" />
+            <field name="relevance_test" type="checkbox" label="COM_PLUGINS_RELEVANCE_TEST" />
 			<field name="key_control" type="spacer" 
 				label="COM_PLUGINS_JCOMMENTS_NOTIFY_ENABLED"
-			/>            
-			
+			/>            			
 		</fieldset>
 		<fieldset name="checkuserscomments">
 			
